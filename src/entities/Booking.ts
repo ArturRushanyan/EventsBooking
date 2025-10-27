@@ -5,10 +5,12 @@ import {
   CreateDateColumn,
   ManyToOne,
   JoinColumn,
+  Unique,
 } from "typeorm";
 import { Event } from "./Event";
 
 @Entity({ name: "bookings" })
+@Unique("UQ_EVENT_USER", ["event", "user_id"])
 export class Booking {
   @PrimaryGeneratedColumn()
   id!: number;
