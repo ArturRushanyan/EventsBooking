@@ -1,5 +1,7 @@
 import { DataSource } from "typeorm";
 import config from "./config";
+import { Event } from "../entities/Event";
+import { Booking } from "../entities/Booking";
 
 export const AppDataSource = new DataSource({
   type: "postgres",
@@ -8,7 +10,7 @@ export const AppDataSource = new DataSource({
   username: config.DATABASE.USERNAME,
   password: config.DATABASE.PASSWORD,
   database: config.DATABASE.DATABASE,
-  entities: [],
+  entities: [Event, Booking],
   synchronize: false,
   logging: false,
 });
