@@ -1,13 +1,16 @@
-import { Request, Response, NextFunction } from "express";
+import { Response, NextFunction } from "express";
+import { TypedRequestBody } from "../types/http";
 import { AppDataSource } from "../config/database";
 import { Event } from "../entities/Event";
 import { Booking } from "../entities/Booking";
+import { BookingRequestBody } from "../types/requests";
+import { AppError } from "../types/errors";
 
 export const reserveSeat = async (
-  req: Request,
+  req: TypedRequestBody<BookingRequestBody>,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     const { event_id, user_id } = req.body;
 
@@ -21,18 +24,15 @@ export const reserveSeat = async (
     });
 
     if (!event) {
-      return res.status(404).json({ error: "Event not found" });
+      res.status(404).json({ error: "Event not found" });
+      return;
     }
 
-    //Check available seats
-    const bookingsCount = await bookingRepository.count({
-      where: { event: event_id },
-    });
+    const bookingsCount: number = event.bookings.length;
 
     if (bookingsCount >= event.total_seats) {
-      return res
-        .status(409)
-        .json({ error: "No available seats for this event" });
+      res.status(409).json({ error: "No available seats for this event" });
+      return;
     }
 
     const booking = new Booking();
@@ -43,15 +43,20 @@ export const reserveSeat = async (
 
     const remainingSeats = event.total_seats - bookingsCount - 1;
 
-    return res.status(201).json({
+    res.status(201).json({
       success: true,
       message: `Booking successful. ${remainingSeats} seats remaining.`,
     });
-  } catch (error: any) {
-    // NOTE: here is especially hardcoded type 'any' to be able to catch any error
-    if (error.code === "23505" && error.constraint === "UQ_EVENT_USER") {
-      next({ status: 400, message: "User already booked this event" });
+    return;
+  } catch (error: unknown) {
+    const maybe = error as Partial<AppError>;
+    if (
+      maybe &&
+      maybe.code === "23505" &&
+      maybe.constraint === "UQ_EVENT_USER"
+    ) {
+      return next({ status: 400, message: "User already booked this event" });
     }
-    next(error);
+    return next(error);
   }
 };

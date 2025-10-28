@@ -1,16 +1,17 @@
-// const constantMessages = require("../utils/constMessages");
-import { Request, Response, NextFunction } from "express";
+import { Request, Response, NextFunction, ErrorRequestHandler } from "express";
+import { toAppError } from "../types/errors";
 
-export const errorHandler = (
-  error: any,
+export const errorHandler: ErrorRequestHandler = (
+  error: unknown,
   req: Request,
   res: Response,
   next: NextFunction
-) => {
-  return res.status(error.status || 500).send({
+): void => {
+  const appError = toAppError(error);
+  res.status(appError.status).send({
     success: false,
     error: {
-      message: error?.message || "Internal server Error",
+      message: appError.message,
     },
   });
 };
