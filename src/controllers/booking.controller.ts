@@ -5,6 +5,7 @@ import { Event } from "../entities/Event";
 import { Booking } from "../entities/Booking";
 import { BookingRequestBody } from "../types/requests";
 import { AppError } from "../types/errors";
+import { Messages } from "../utils/constantMessages";
 
 export const reserveSeat = async (
   req: TypedRequestBody<BookingRequestBody>,
@@ -17,21 +18,20 @@ export const reserveSeat = async (
     const eventRepository = AppDataSource.getRepository(Event);
     const bookingRepository = AppDataSource.getRepository(Booking);
 
-    // Check if event exists
     const event = await eventRepository.findOne({
       where: { id: event_id },
       relations: ["bookings"],
     });
 
     if (!event) {
-      res.status(404).json({ error: "Event not found" });
+      res.status(404).json({ message: Messages.eventNotFound });
       return;
     }
 
     const bookingsCount: number = event.bookings.length;
 
     if (bookingsCount >= event.total_seats) {
-      res.status(409).json({ error: "No available seats for this event" });
+      res.status(409).json({ message: Messages.NoAvailableSeats });
       return;
     }
 
@@ -45,7 +45,7 @@ export const reserveSeat = async (
 
     res.status(201).json({
       success: true,
-      message: `Booking successful. ${remainingSeats} seats remaining.`,
+      message: Messages.successBooking(remainingSeats),
     });
     return;
   } catch (error: unknown) {
@@ -55,7 +55,7 @@ export const reserveSeat = async (
       maybe.code === "23505" &&
       maybe.constraint === "UQ_EVENT_USER"
     ) {
-      return next({ status: 400, message: "User already booked this event" });
+      return next({ status: 400, message: Messages.alreadyBookedThisEvent });
     }
     return next(error);
   }

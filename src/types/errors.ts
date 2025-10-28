@@ -1,3 +1,5 @@
+import { ErrorMessages } from "../utils/constantMessages";
+
 export interface AppError {
   status: number;
   message: string;
@@ -13,11 +15,11 @@ export function toAppError(error: unknown): AppError {
       message:
         typeof maybe.message === "string"
           ? maybe.message
-          : "Internal server Error",
+          : ErrorMessages.InternalServerError,
       code: typeof maybe.code === "string" ? maybe.code : undefined,
       constraint:
         typeof maybe.constraint === "string" ? maybe.constraint : undefined,
     };
   }
-  return { status: 500, message: "Internal server Error" };
+  return { status: 500, message: ErrorMessages.InternalServerError };
 }

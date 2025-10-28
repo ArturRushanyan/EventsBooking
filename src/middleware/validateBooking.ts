@@ -1,7 +1,8 @@
-import { Response, NextFunction, RequestHandler } from "express";
+import { Response, NextFunction } from "express";
 import { BookingRequestBody } from "../types/requests";
 import { AppError } from "../types/errors";
 import { TypedRequestBody } from "../types/http";
+import { ErrorMessages } from "../utils/constantMessages";
 
 export const validateBooking = (
   req: TypedRequestBody<BookingRequestBody>,
@@ -13,18 +14,21 @@ export const validateBooking = (
   if (!event_id || !user_id) {
     throw {
       status: 400,
-      message: "event_id and user_id are required",
+      message: ErrorMessages.eventIdAndUserIdRequired,
     } as AppError;
   }
 
   if (isNaN(Number(event_id))) {
-    throw { status: 400, message: "event_id must be a number" } as AppError;
+    throw {
+      status: 400,
+      message: ErrorMessages.eventIdMustBeNumber,
+    } as AppError;
   }
 
   if (typeof user_id !== "string" || user_id.trim().length === 0) {
     throw {
       status: 400,
-      message: "user_id must be a non-empty string",
+      message: ErrorMessages.userIdMustBeString,
     } as AppError;
   }
 
