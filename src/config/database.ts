@@ -11,6 +11,7 @@ export const AppDataSource = new DataSource({
   password: config.DATABASE.PASSWORD,
   database: config.DATABASE.DATABASE,
   entities: [Event, Booking],
+  migrations: [__dirname + "/../migrations/*.{ts,js}"],
   synchronize: false,
   logging: false,
 });
